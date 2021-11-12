@@ -1,0 +1,311 @@
+---
+title: "Assignment_3"
+author: "Zain Mudassar"
+date: "9/20/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+## Question 1:
+
+## Q1.A
+ (10 pts) Count the number of animals which weigh under 1 kilogram and sleep more than 14 hours a day. (filter(), query())
+ 
+## Answer: 
+```{r Q1(A)}
+sleep<- read.csv(file = "data/msleep_ggplot2.csv")
+library("dplyr")
+head(sleep)
+sleep<-sleep[complete.cases(sleep),]
+head(sleep)
+
+filter(sleep, sleep_total > 14,bodywt < 1 )
+
+
+
+```
+## Q1.b
+(10 pts) Print the name, order, sleep time and bodyweight of the animals with the 6 longest sleep times, in order of sleep time. (select(), arrange(), loc(), sort_values())
+
+## Answer:
+
+```{r Q1(B)}
+
+
+
+arrange(sleep,desc(sleep_total)) %>% head(5) %>%
+  
+
+select (name,order,sleep_total,bodywt)
+
+
+
+```
+## Q1.C
+(10 pts) Add two new columns to the dataframe; wt_ratio with the ratio of brain size to body weight, rem_ratio with the ratio of rem sleep to sleep time. If you think they might be useful, feel free to extract more features than these, and describe what they are. (mutate(), assign())
+
+## Answer:
+
+```{r Q1(C)}
+
+sleep %>%
+  
+  mutate(Wt_ratio=brainwt/bodywt) %>%
+mutate(rem_ratio=sleep_rem/sleep_total)
+
+
+
+
+
+```
+## Q1.D 
+(14 pts) Display the average, min and max sleep times for each order. (group_by(), summarise(), groupby(), agg())
+
+## Answer:
+
+```{r Q1(D)}
+sleep %>%
+  group_by(order) %>%
+  summarise(avg_sleep = mean(sleep_total), min_sleep = min(sleep_total), max_sleep = max(sleep_total))
+
+
+```
+## Q1.E
+(16 pts) Impute the missing brain weights as the average wt_ratio for that animal’s order times the animal’s weight. Make a second copy of your dataframe, but this time impute missing brain weights with the average brain weight for that animal’s order. What assumptions do these data filling methods make? Which is the best way to impute the data, or do you see a better way, and why? You may impute or remove other variables as you find appropriate. Briefly explain your decisions. (group_by(), mutate(), groupby(),assign())
+
+## Answer:
+```{r Q1(E)}
+
+IM <- sleep%>%
+  group_by(order) %>%
+  mutate(brainwt = ifelse(is.na(brainwt), mean(brainwt / bodywt, na.rm = TRUE) * bodywt, brainwt))%>%
+  ungroup()
+IM
+
+
+na.omit(IM[,"brainwt"])
+
+IM2 <- sleep%>%
+  group_by(order) %>%
+  mutate(brainwt = ifelse(is.na(brainwt), mean(brainwt,na.rm = TRUE), brainwt)) %>%
+  ungroup()
+IM2
+
+```
+
+Imputing this data helps us in making calculations by giving us nearby values of not available entry.
+I think that second way of imputing data is better because first statement is computing the same output but it is using extra steps.In the second one we are just imputing it by taking mean of brainwt value.
+
+
+## Q2.A
+(5 pts) Explain why this line > mutate(key = stringr::str_replace(key, "newrel", "new_rel"))
+
+## Answer:
+
+```{r Q2(A)}
+library(tidyr)
+who <- tidyr::who
+
+
+
+```
+
+
+The above line of code is used to replace strings which contains 'newrel' as column name to new_rel. It is because when we try to separate data by using separate function. If we get column name by newrel,both the details of weather it is a new case of TB which is given by name 'new' and 'rel' will both be present in a new column.The idea is to make the column names consistent so we change newrel to new_rel which makes the separate function and other functions work
+
+## Q2.B
+(5 pts) How many entries are removed from the dataset when you set values_drop_na to true in the pivot_longer command (in this dataset)
+
+## Answer:
+
+```{r Q2(B)}
+whoWithNA<-who %>%
+pivot_longer(
+    cols = new_sp_m014:newrel_f65, 
+    names_to = "key", 
+    values_to = "cases", 
+    values_drop_na = FALSE
+  ) %>% 
+  mutate(
+    key = stringr::str_replace(key, "newrel", "new_rel")
+  )%>%
+  separate(key, c("new", "var", "sexage")) %>% 
+  select(-new, -iso2, -iso3) %>% 
+  separate(sexage, c("sex", "age"), sep = 1)
+head(whoWithNA)
+
+```
+
+
+```{r Q2(B.1)}
+Counting<-count(whoWithNA)
+whoWithoutNa<-who%>%
+  pivot_longer(
+    cols = new_sp_m014:newrel_f65, 
+    names_to = "key", 
+    values_to = "cases", 
+    values_drop_na = TRUE
+  ) %>% 
+  mutate(
+    key = stringr::str_replace(key, "newrel", "new_rel")
+  )%>%
+  separate(key, c("new", "var", "sexage")) %>% 
+  select(-new, -iso2, -iso3) %>% 
+  separate(sexage, c("sex", "age"), sep = 1)
+CountingWithout<-count(whoWithoutNa)
+head(whoWithoutNa)
+
+message("Total NA values= ", Counting )
+message("After removing NA values= ", CountingWithout )
+TotalDropped <-Counting-CountingWithout
+message("Total values removed= ", TotalDropped )
+
+
+
+
+
+
+```
+## Q2.C
+(5 pts) Explain the difference between an explicit and implicit missing value, in general. Can you find any implicit missing values in this dataset, if so where?
+
+## Answer:
+
+```{r Q2(C)}
+ who
+who %>% 
+  complete(country, year) %>%
+  nrow()
+
+
+
+
+```
+
+Explicit values are the ones which are marked with NA, on the other hand implicit values are the ones which are simply not present in the data. If we look at our dataset. The number of rows are more in Country and Year, that means that there are implicit values here.
+
+## Q2.D
+(5 pts) Looking at the features (country, year, var, sex, age, cases) in the tidied data, are they all appropriately typed? Are there any features you think would be better suited as a different type? Why or why not?
+
+## Answer:
+```{r Q2(D)}
+
+who1<-who%>%
+ pivot_longer(
+    cols = new_sp_m014:newrel_f65, 
+    names_to = "key", 
+    values_to = "cases", 
+    values_drop_na = TRUE
+  ) %>% 
+  mutate(
+    key = stringr::str_replace(key, "newrel", "new_rel")
+  )%>%
+  separate(key, c("new", "var", "sexage")) %>% 
+  select(-new, -iso2, -iso3) %>% 
+  separate(sexage, c("sex", "age"), sep = 1)
+
+head(who1)
+
+sapply(who1, class)
+
+
+```
+
+After tiding the data I think all the columns are appropriately typed except age.Which should be an integer instead of character, since it contains integer values. The rest of the data is clearly defined and tidy.
+
+
+## Q2.E
+(10 pts) Generate an informative visualization, which shows something about the data. Give a brief description of what it shows, and why you thought it would be interesting to investigate?
+
+## Answer:
+
+```{r Q2(E)}
+
+who2<-who %>%
+  
+ pivot_longer(
+    cols = new_sp_m014:newrel_f65, 
+    names_to = "key", 
+    values_to = "cases", 
+    values_drop_na = TRUE
+  ) %>% 
+  mutate(
+    key = stringr::str_replace(key, "newrel", "new_rel")
+  )%>%
+  separate(key, c("new", "var", "sexage")) %>% 
+  select(-new, -iso2, -iso3) %>% 
+  separate(sexage, c("sex", "age"), sep = 1)
+
+
+
+
+
+library(ggplot2)
+ggplot(who2, aes(year, cases)) +
+  xlim(1994, 2014)+
+  geom_line(aes(group = sex), colour = "darkorange2") + 
+  geom_point(aes(colour = sex) )
+
+whoG<-who2%>%
+group_by(sex)%>%
+tally(cases)
+ggplot(data=whoG, aes(x=sex,y=n))+
+geom_bar(stat="identity",width=0.5,fill="darkorange2")+
+ggtitle("Male and Female TB Cases")+
+xlab("Sex")+ylab("Total")
+
+
+whoC=who2%>%
+group_by(country)%>%
+tally(cases)%>%
+top_n(3)
+
+ggplot(data=whoC, aes(x=country,y=n))+
+geom_bar(stat="identity",width=0.5,fill="darkorange2")+
+ggtitle("Top 3 Countries with TB")+
+xlab("Country")+ylab("Total")
+```
+I have made three graphs, the first graph shows the number of male and female cases with years, one thing to notice is the number of cases increased with time and highest number of cases were in 2007 of males.The second graph shows that the total number of male cases are slightly more then female cases.At last the final graph shows the top 3 countries with TB.
+The results show that number of TB cases were more in men and it increased with time and China, Inda and South Africa were the countries with most cases.
+
+
+## Q2.F
+(10 pts) Suppose you have the following dataset called siteDemo:
+
+## Answer:
+
+```{r Q2(F)}
+
+w<-data.frame(site =c("facebook","myspace","snapchat","twitter","tiktok"),
+              U30.F=c(30,1,6,18,44),
+              U30_M=c(35,2,5,23,60),
+              O30.F=c(66,3,3,12,2),
+              O30.M=c(58,6,2,28,7) )
+
+
+
+
+w %>%
+  pivot_longer(
+    c('U30.F', 'U30_M', 'O30.F', 'O30.M'), 
+    names_to = "key", values_to = "count" 
+  ) %>%
+mutate(
+  key = stringr::str_replace(key, "U30_M", "U30.M")
+  ) %>%
+separate(key, c("AgeGroup", "Gender"), sep = 4) %>%
+separate(AgeGroup,("AgeGroup"),sep=3)
+
+```
+
+
+

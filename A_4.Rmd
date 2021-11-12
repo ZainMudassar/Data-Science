@@ -1,0 +1,175 @@
+---
+title: "A_4"
+author: "Zain Mudassar"
+date: "10/3/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+
+a. (10 pts) Filter the dataset (using a left join) to display the tail number, year,
+month, day, hour, origin, and humidity for all flights heading to Tampa
+International Airport (TPA) on the afternoon of November 1, 2013.
+```{r Q1a}
+library(dplyr)
+library(nycflights13)
+
+
+
+left_join_table<-left_join(flights,weather)%>%
+select(origin,year,month,day,hour,tailnum,humid,year,dest)%>%
+  filter(dest=="TPA" & month==11 & year==2013 & day==1 & hour>=12)
+
+
+left_join_table
+
+
+
+
+
+
+
+```
+
+b. (10 pts) What is the difference between the following two joins?
+anti_join(flights, airports, by = c("dest" = "faa"))
+anti_join(airports, flights, by = c("faa" = "dest"))
+```{r Q1b}
+anti_join(flights, airports, by = c("dest" = "faa"))
+anti_join(airports, flights, by = c("faa" = "dest"))
+
+```
+## Answer:
+anti_join(flights, airports, by = c("dest" = "faa")) shows us flights which do not exists in Airport column 'faa' destination.
+anti_join(airports, flights, by = c("faa" = "dest")) shows us airports which are not in flight dest column.
+
+
+# Q1c. (10 pts)
+Select the origin and destination airports and their latitude and longitude
+for all fights in the dataset (using one or more inner joins). Hint: There should be
+329,174 flights if you’ve done this correctly.
+
+```{r Q1c}
+
+latlon <- flights %>%
+  inner_join(select(airports, origin = faa, originLat = lat, originLon = lon),
+    by = "origin"
+  ) %>%
+  inner_join(select(airports, dest = faa, destLat = lat, destLon = lon),
+    by = "dest"
+  )
+latlon<-latlon[,c("origin","dest","originLat","originLon","destLat","destLon")]
+
+latlon
+```
+# Q1d
+ Use group_by and count to get the number of flights to each unique
+origin/destination combination. Hint: There should be 217 of these total. 
+```{r Q1d}
+latlon%>%
+group_by(origin,dest)%>%
+  count(nrow(latlon))
+
+```
+## e.
+(10 pts) Produce a map that colors each destination airport by the average air time
+of its incoming flights. Here is a code snippet to draw a map of all flight
+destinations, which you can use as a starting point. You may need to install the
+maps packages if you have not already. Adjust the title, axis labels and aesthetics
+to make this visualization as clear as possible. Hint: You may find it useful to use
+a different type of join in your solution than the one in the snippet
+```{r Q1e}
+library(maps)
+library(ggplot2)
+library(wesanderson)
+
+
+airports %>%
+ semi_join(flights, c("faa" = "dest")) %>%
+ ggplot(aes(lon, lat)) +
+ borders("state") +
+ geom_point() +
+ coord_quickmap()
+
+
+avg_time<- flights %>%
+  group_by(dest)%>%
+  summarise(average = mean(air_time,na.rm = TRUE))%>%
+  inner_join(airports, by =c(dest="faa"))
+
+avg_time %>%
+  ggplot(aes(lon, lat, colour = average) )+
+  borders("state") +
+  geom_point() +
+  coord_quickmap() 
+
+
+ 
+
+
+```
+## Question 2.
+  The result of that warm-up question is summarized in a plaintext file posted alongside this assignment.The task you have for this problem is to visualize that list on a world map, indicating in some way the cities. 
+  
+```{r Q2}
+library(png)
+library(ggplot2)
+library(knitr)
+
+img_path <- "DS_map1.png"
+img1 <- readPNG(img_path, native = TRUE, info = TRUE)
+plot.new() 
+rasterImage(img1,0,0,1,1)
+```
+
+
+
+
+## Question 3.
+
+```{r Q3}
+library(tm)
+library(wordcloud)
+
+word<-read.csv("comments.csv", header = TRUE)
+
+```
+
+```{r Q3_}
+corp<-Corpus(VectorSource(word$Comments))
+
+
+corp<- tm_map(corp,removePunctuation)
+corp<- tm_map(corp,content_transformer(tolower))
+corp<- tm_map(corp,removeWords,stopwords("english"))
+corp<- tm_map(corp, removeNumbers)
+corp<- tm_map(corp,stripWhitespace)
+
+corp<- tm_map(corp,removeWords,c("even","cos","per","now","can","told","get","will",
+                                 "got","spam","ham","females"))
+
+
+
+t_d_m<-TermDocumentMatrix(corp)
+m<-as.matrix(t_d_m)
+v<-sort(rowSums(m),decreasing = TRUE)
+d<- data.frame(word = names(v),freq=v)
+
+wordcloud(d$word , d$freq, rot.per = 0.3,
+          scale=c(4,.5),random.order = TRUE, max.words=50,
+          colors= brewer.pal(10,"Dark2"))
+title(main = "Word_Cloud",font.main=1,cex.main=1.5)
+
+```
+
+
+

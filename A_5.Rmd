@@ -1,0 +1,357 @@
+---
+title: "Untitled"
+author: "Zain Mudassar"
+date: "10/29/2020"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+## Question 1
+
+This question involves the use of multiple linear regression on the Auto data set from the
+course webpage (https://scads.eecs.wsu.edu/index.php/datasets/). Ensure that you remove
+missing values from the dataframe, and that values are represented in the appropriate types.
+
+```{r Q1}
+Auto<-read.csv(file = "Auto.csv",na.strings = "?")
+str(Auto)
+complete.cases(Auto)
+head(Auto)
+Auto <- na.omit(Auto)
+Auto
+
+```
+a. (5%) Perform a multiple linear regression with mpg as the response and all other variables except name as the predictors. Show a printout of the result (including coefficient, error and t values for each predictor). Comment on the output:
+
+```{r Q1a}
+Auto1 = Auto[1:8]
+lm.fit = lm(mpg~., data = Auto1)
+summary(lm.fit)
+
+```
+i) Which predictors appear to have a statistically significant relationship to the response,
+and how do you determine this?
+
+Answer:
+
+
+
+F-statistic:252.4 shows us that at least one variable is significant, the p-values of variables show us that weight,displacement, origin  and year are significant variables.
+
+ii) What does the coefficient for the displacement variable suggest, in simple terms?
+
+Answer:
+
+
+
+Co efficient suggests that mpg has positive relation with displacement. 
+When displacement increases,the mpg increases by 0.019896 times, The p-value shows us that displacement is significant for predicting mpg as response variable.
+
+b. (5%) Produce diagnostic plots of the linear regression fit. Comment on any problems you see with the fit. Do the residual plots suggest any unusually large outliers? Does the leverage plot identify any observations with unusually high leverage?
+
+```{r Q1b}
+par(mfrow=c(2,3))
+plot(lm.fit)
+plot(predict(lm.fit), residuals(lm.fit))
+
+```
+Residuals and Fitted:
+
+
+
+There is a non linear trend in residuals vs fitted. Non-linear relationship doesn,t work with linear regression.Residuals increase as fitted values increase because there are more outliers at higher fitted values.
+
+Normal Q-Q Plot:
+
+For long range fitted values, the residuals are distributed but at high of fitted values, residual deviate from straight line and donot have normal distribution.
+
+Residuals and Leverage plot:
+
+The above plot shows that most of the residuals are within the dotted red line and are called cook’s distance. If we remove 14th observation that can probably increase accuracy of linear regression.
+
+c. (5%) Fit linear regression models with interaction effects. Do any interactions appear to be statistically significant?
+
+```{r Q1c}
+Auto1 = Auto[1:8]
+lm.fit=lm(mpg~.*.,data=Auto1)
+summary(lm.fit)
+```
+p-value is low (0.00365) so acceleration:origin is statistically significant
+
+p-value is low (0.03033) so acceleration:year is statistically significant
+
+p-value is low (0.01352) so displacement:year is statistically significant
+
+
+
+## Question 2
+This problem involves the Boston data set, which we saw in class. We will now try to predict
+per capita crime rate using the other variables in this data set. In other words, per capita
+crime rate is the response, and the other variables are the predictors. 
+
+a. For each predictor, fit a simple linear regression model to predict the response.
+Include the code, but not the output for all models in your solution.
+
+(6%) b. In which of the models is there a statistically significant association between the
+predictor and the response? Considering the meaning of each variable, discuss the
+relationship between crim and nox, chas, medv and dis in particular. How do these
+relationships differ?
+
+c. (6%) Fit a multiple regression model to predict the response using all the predictors.
+Describe your results. For which predictors can we reject the null hypothesis H0 : βj = 0?
+
+d. (6%) How do your results from (a) compare to your results from (c)? Create a plot
+displaying the univariate regression coefficients from (a) on the x-axis, and the multiple
+regression coefficients from (c) on the y-axis. That is, each predictor is displayed as a
+single point in the plot. Its coefficient in a simple linear regression model is shown on the 
+2
+x-axis, and its coefficient estimate in the multiple linear regression model is shown on the
+y-axis. What does this plot tell you about the various predictors?
+
+e. (6%) Is there evidence of non-linear association between any of the predictors and the
+response? To answer this question, for each predictor X, fit a model of the form
+Y = β0 + β1X + β2X
+2 + β3X
+3+ ε
+Hint: use the poly() function in R. Again, include the code, but not the output for
+each model in your solution, and instead describe any non-linear trends you
+uncover. 
+
+```{r Q2}
+library(MASS)
+head(Boston)
+
+Boston <- na.omit(Boston)
+attach(Boston)
+mzn <- lm(crim ~ zn)
+summary(mzn)
+
+mchas <- lm(crim ~ chas)
+summary(mchas)
+mnox <- lm(crim ~ nox)
+summary(mnox)
+mchas <- lm(crim ~ chas)
+summary(mchas)
+mmedv <- lm(crim ~ medv)
+summary(mmedv)
+mdis <- lm(crim ~ dis)
+summary(mdis)
+
+fit <- lm(crim ~ ., data = Boston)
+summary(fit)
+
+
+```
+
+```{r Q2--}
+
+univariate <- lm(crim ~ zn, data = Boston)$coefficients[2]
+univariate <- append(univariate, lm(crim ~ indus, data = Boston)$coefficients[2])
+
+univariate <- append(univariate, lm(crim ~ chas, data = Boston)$coefficients[2])
+
+univariate <- append(univariate, lm(crim ~ nox, data = Boston)$coefficients[2])
+
+univariate <- append(univariate, lm(crim ~ rm, data = Boston)$coefficients[2])
+
+univariate <- append(univariate, lm(crim ~ age, data = Boston)$coefficients[2])
+
+univariate <- append(univariate, lm(crim ~ dis, data = Boston)$coefficients[2])
+
+univariate <- append(univariate, lm(crim ~ rad, data = Boston)$coefficients[2])
+
+univariate <- append(univariate, lm(crim ~ tax, data = Boston)$coefficients[2])
+
+univariate <- append(univariate, lm(crim ~ ptratio, data = Boston)$coefficients[2])
+
+univariate <- append(univariate, lm(crim ~ black, data = Boston)$coefficients[2])
+
+univariate <- append(univariate, lm(crim ~ lstat, data = Boston)$coefficients[2])
+
+univariate <- append(univariate, lm(crim ~ medv, data = Boston)$coefficients[2])
+
+Multiple <- (lm(crim ~ . - crim, data = Boston))
+
+Multiple$coefficients[2:14]
+
+
+plot(univariate, Multiple$coefficients[2:14], main = "Univariate regression coefficients vs. Multiple Regression Coefficients", xlab = "Univariate
+Regression", ylab = "Multiple Regression" ,col = c("red", "blue"))
+```
+```{r Q2-}
+
+mzn2 <- lm(crim ~ poly(zn, 3))
+summary(mzn2)
+
+mindus2 <- lm(crim ~ poly(indus, 3))
+summary(mindus2)
+mnox2 <- lm(crim ~ poly(nox, 3))
+summary(mnox2)
+mrm2 <- lm(crim ~ poly(rm, 3))
+summary(mrm2)
+mage2 <- lm(crim ~ poly(age, 3))
+summary(mage2)
+
+mdis2 <- lm(crim ~ poly(dis, 3))
+
+summary(mdis2)
+
+mrad2 <- lm(crim ~ poly(rad, 3))
+
+summary(mrad2)
+
+mtax2 <- lm(crim ~ poly(tax, 3))
+
+
+summary(mtax2)
+
+mptratio2 <- lm(crim ~ poly(ptratio, 3))
+
+summary(mptratio2)
+
+mblack2 <- lm(crim ~ poly(black, 3))
+
+summary(mblack2)
+
+mlstat2 <- lm(crim ~ poly(lstat, 3))
+
+summary(mlstat2)
+
+mmedv2 <- lm(crim ~ poly(medv, 3))
+
+summary(mmedv2)
+```
+## Question 3
+
+Suppose we collect data for a group of students in a statistics class with variables:
+
+X1 = hours studied,
+
+X2 = undergrad GPA,
+
+X3 = PSQI score (a sleep quality index), and
+
+Y = receive an A.
+
+We fit a logistic regression and produce estimated coefficient, β0 = −7, β1 = 0.1, β2 = 1, β3 = -.04.
+
+a. (5%) Estimate the probability that a student who studies for 32 h, has a PSQI score of 12 and has an undergrad GPA of 3.0 gets an A in the class. Show your work.
+
+Solution:
+
+probability= eB0+B1X1+B2X2+B3X3/1+eB0+B1X1+B2X2+B3X3 = A/B
+```{r Q3a}
+
+A = 2.71828^(-7+(0.1)*(32)+(1)*(3)+(-0.04)*(12))
+B = 1+2.71828^(-7+(0.1)*(32)+(1)*(3)+(-0.04)*(12))
+prob = A/B
+prob
+
+```
+
+b. (5%) How many hours would the student in part (a) need to study to have a 50 % chance of getting an A in the class? Show your work.
+
+Solution:
+
+log ((p(x)/1-p(x)) = BO+B1X1+B2X2+B3X3
+
+```{r Q3b}
+
+C = log((0.5)/(1-0.5))
+s_h = (7-(1)*(3)+(0.04)*(12))/0.1
+s_h
+
+
+```
+
+c. (5%) How many hours would a student with a 3.0 GPA and a PSQI score of 3 need to study to have a 50 % chance of getting an A in the class? Show your work.
+
+Solution:
+
+log ((p(x)/1-p(x)) = BO+B1X1+B2X2+B3X3
+
+
+```{r Q3c}
+
+D = log((0.5)/(1-0.5))
+h_A = (7-(1)*(3)+(0.04)*(3))/0.1
+h_A
+
+
+```
+
+```{r Q4a}
+library(RJSONIO)
+library(class)
+library(e1071)
+library(RTextTools)
+library(tm)
+library(tidytext)
+library(caret)
+library(lattice)
+library(ggplot2)
+library(tokenizers)
+library(SnowballC)
+library(dplyr)
+
+gaurdian<-read.csv(file = "GuardianArticles.csv")
+
+gaurdian
+
+tidy_review<-gaurdian%>%
+  unnest_tokens(body,body)
+
+
+
+
+body <- Corpus(VectorSource(gaurdian$body))
+t_d_Matrix <- TermDocumentMatrix(body)
+as.matrix(t_d_Matrix[137, which(as.matrix(t_d_Matrix[137, ]) != 0)])
+
+
+
+
+ 
+
+
+
+
+```
+
+```{r Q4b}
+#t_d_Matrix <- removeSparseTerms(t_d_Matrix, 0.99)
+
+#c_matrix = cor(as.matrix(t_d_Matrix))
+#c_terms = findCorrelation(c_matrix, cutoff = 0.85)
+#c_terms = sort(c_terms)
+#t_d_Matrix = t_d_Matrix[, -c(c_terms)]
+
+
+#t_d_Matrix.train = t_d_Matrix[1:9000, ]
+#t_d_Matrix.test = t_d_Matrix[9001:11458, ]
+#corpus.train = corpus[1:9000]
+#corpus.test = corpus[9001:11458]
+#gaurdian.train = gaurdian[1:9000, ]
+#gaurdian.test = gaurdian[9001:11458, ]
+#gaurdian.train$section = as.factor(gaurdian.train$section)
+#gaurdian.test$section = as.factor(gaurdian.test$section)
+
+
+#m <- naiveBayes(as.matrix(t_d_Matrix.train), gaurdian.train$section)
+
+#p = predict(m, as.matrix(t_d_Matrix.test))
+
+#confusionMatrix(p, gaurdian.test$section)
+
+```
+

@@ -1,0 +1,243 @@
+---
+title: "CPTS575_Homework2_Zain_Mudassar(011712157)"
+author: "Zain Mudassar"
+date: "9/11/2020"
+output: pdf_document
+---
+
+#Question 1:
+
+(a) Use the read.csv() function to read the data into R, or the csv library to read in the
+data with python. In R you will load the data into a dataframe. In python you may store it as a list
+of lists or use the pandas dataframe to store your data. Call the loaded data college. Ensure that
+your column headers are not treated as a row of data.
+
+```{r, Part a}
+
+
+
+college <- read.csv(file = "data/College.csv");
+head(college)
+
+```
+
+(b) Find the median cost of books for all schools in this dataset.
+
+```{r, Partb}
+
+median(college$Books)
+```
+
+
+(c) Produce a scatterplot that shows a relationship between two numeric (not factor or
+boolean) features of your choice in the dataset. Ensure it has appropriate axis labels and a title.
+
+```{r, Partc}
+
+plot(college$Apps,college$Accept, main="Applications Vs Acceptance", xlab="Applications ", ylab="Accepted ", pch=19 ,
+     col = c("green","red"))
+
+lines(smooth.spline(college$Apps,college$Accept),lwd=3)
+
+```
+
+(d) Produce a histogram showing the overall enrollment numbers (P.Undergrad plus
+F.Undergrad) for both public and private (Private) schools. You may choose to show both on a
+single plot (using side by side bars) or produce one plot for public schools and one for private
+schools. Ensure whatever figures you produce have appropriate axis labels and a title.
+
+```{r, Partd}
+priCollege <- college[college$Private == "Yes",];
+pubCollege <- college[college$Private == "No",];
+ 
+hist(priCollege$F.Undergrad+priCollege$P.Undergrad,xlab="Private Schools",ylab = "Total Enrollments",main = "Histogram of Private College")
+
+hist(pubCollege$F.Undergrad+pubCollege$P.Undergrad,xlab="Public Schools",ylab = "Total Enrollments",main = "Histogram of Public College")
+
+```
+
+(e) Create a new qualitative variable, called Top, by binning the Top10perc variable into
+two categories (Yes and No). Specifically, divide the schools into two groups based on whether
+or not the proportion of students coming from the top 10% of their high school classes exceeds
+75%.
+Now produce side-by-side boxplots of the schools' acceptance rates (based on Accept and Apps)
+for each of the two Top categories. There should be two boxes on your figure, one for top
+schools and one for others. How many top universities are there?
+
+```{r, Parte}
+for (i in 1: nrow(college)) {
+  
+  if(college$Top10perc[i]<75)
+  {college$Top[i] <- "No"
+  }
+ else if(college$Top10perc[i]>75)
+  {
+    college$Top[i] <- "Yes"} 
+}
+
+
+boxplot(college$Apps/college$Accept ~college$Top  ,  col = "orange" , main="Acceptance rate of Top",xlab = "Top" ,ylab="Acceptance")
+
+#Number of Top univerities 
+
+result<-"Total number of Top universities are"
+result
+length(which(college$Top=="Yes"));
+
+
+
+
+
+```
+
+(f) Continue exploring the data, producing two new plots of any type, and provide a brief
+(one to two sentence) summary of your hypotheses and what you discover. Feel free to think
+outside the box on this one but if you want something to point you in the right direction, look at
+the summary statistics for various features, and think about what they tell you. Perhaps try
+plotting various features from the dataset against each other and see if any patterns emerge.
+
+```{r, Partf}
+
+plot(x = college$Apps,
+y = college$Accept ,
+xlab ="Apps",
+ylab = "Accept",
+main = "Applications and Acceptance", pch=19, 
+col = c("blue","red"))
+lines(smooth.spline(college$Apps,college$Accept),lwd=3)
+
+
+plot(x = college$F.Undergrad,
+y = college$Accept ,
+xlab ="F.Undergrad",
+ylab = "Accept",
+main = "F.Undergrad Vs Accept",pch=19 ,
+col = c("blue","red"))
+lines(smooth.spline(college$F.Undergrad,college$Accept),lwd=3)
+
+plot(x = college$F.Undergrad,
+y = college$Enroll ,
+xlab = "F.Undergrad",
+ylab = "enroll",
+main ="F.undergrad vs Enroll",pch=19 ,
+col = c("blue","red"))
+lines(smooth.spline(college$F.Undergrad,college$Enroll),lwd=3)
+
+```
+
+Summary: 
+
+Based on information in the graphs we can comment on the relationship between  of the variables  such as number of applications and Acceptance rate have a linear relationship. With the increase in the number of applications, the acceptance rate also increases.
+
+
+Secondly, total full time undergraduates in the college and Accept also have an almost linear relationship. Number of Full time undergraduates with the increase in acceptance rate. 
+
+Lastly, F.Undergrad and Enroll also have almost a linear relationship between them. When enrollment increases there will also be a increase in F.Undergrad. 
+
+
+
+
+##Question 2
+
+(a) Specify which of the predictors are quantitative (DEFINE), and which are qualitative
+(DEFINE)? Keep in mind that a qualitative variable may be represented as a quantitative type in
+the dataset, or the reverse. You may wish to adjust the types of your variables based on your
+findings.
+
+```{r, Q2Parta}
+auto <- read.csv(file = "data/Auto.csv")
+head(auto)
+
+
+       
+auto[auto=="?"] <-NA
+auto<-
+  auto[complete.cases(auto),]
+
+
+
+
+
+
+quantitative<-c("mpg","cylinders" , "displacement" ,"horsepower" ,"weight" ,"acceleration")
+
+qualitative<-c("year" , "origin" , "name")
+quantitative
+qualitative
+```
+
+(b) What is the range, mean and standard deviation of each quantitative predictor?
+
+```{r, Q2Partb}
+sapply((list(auto$mpg, auto$cylinders, auto$displacement,auto$horsepower, auto$weight,auto$acceleration)),range)
+
+sapply((list(auto$mpg, auto$cylinders, auto$displacement, auto$weight,auto$acceleration,as.numeric(auto$horsepower))),mean)
+
+sapply((list(auto$mpg, auto$cylinders, auto$displacement, auto$weight,auto$acceleration,as.numeric(auto$horsepower))),sd)
+
+```
+
+(c) Now remove the 40th through 80th (inclusive) observations from the dataset. What is
+the range, mean, and standard deviation of each predictor in the subset of the data that remains?
+
+```{r, Q2Partc}
+ excluded<- auto[-c(40:80), ]
+excluded
+sapply((list(excluded$mpg, excluded$cylinders,excluded$displacement,excluded$horsepower, excluded$weight,
+             excluded$acceleration)), range)
+
+sapply((list(excluded$mpg, excluded$cylinders,excluded$displacement,excluded$weight,excluded$acceleration)), mean)
+sapply((list(excluded$mpg, excluded$cylinders,excluded$displacement, excluded$weight, excluded$acceleration)), sd)
+
+```
+
+(d) Using the full data set, investigate the predictors graphically, using scatterplots,
+correlation scores or other tools of your choice. Create a correlation matrix for the relevant
+variables.
+
+```{r, Q2Partd}
+
+par(mfrow=c(2,2))
+plot(x = auto$horsepower,
+     y = auto$mpg,
+     xlab = "horsepower",
+     ylab = "mpg",
+     main = "Horse Power vs MPG",
+     col = c("green","red"))
+
+
+plot(x = auto$cylinders,
+     y = auto$mpg,
+     xlab = "cylinders",
+     ylab = "MPG",
+     main = "Cylinders vs MPG",
+     col = c("green","red"))
+
+plot(x = auto$displacement,
+     y = auto$mpg,
+     xlab = "Displacement",
+     ylab = "MPG",
+     main = "Displacement vs MPG",
+     col = c("green","red"))
+
+plot(x = auto$weight,
+     y = auto$mpg,
+     xlab = "Weight",
+     ylab = "MPG",
+     main = "Weight vs MPG",
+     col = c("green","red"))
+
+cor.test(auto$mpg,auto$acceleration)
+cor.test(auto$mpg,auto$weight)
+cor.test(auto$mpg,auto$cylinders)
+cor.test(auto$mpg,auto$displacement)
+```
+
+(e) Suppose that we wish to predict gas mileage (mpg) on the basis of the other variables.
+Which, if any, of the other variables might be useful in predicting mpg? Justify your answer
+based on the prior correlations
+
+ANSWER: The prior correlation data show that there is a moderate positive correlation between 'mpg' and 'acceleration' of 0.42 which means that as acceleration takes more time, mpg also increases. The second correlation is between 'mpg' and 'weight' which shows a strong negative correlation of 0.83 between two variables, meaning that if weight increases the mpg decreases.
+Similarly, there is a strong negative correlation of 0.80 between 'mpg' and 'displacement' which means that as displacement increases mpg decreases.
+Lastly, we made a correlation between 'mpg' and 'cylinders' and the result shows that there is a negative correlation of 0.77 between two variables, meaning if cylinders increase mpg decreases.
+Results:If displacement, cylinders and weight increase then mpg decreases and if acceleration takes more time than there is a moderate increase in mpg.
